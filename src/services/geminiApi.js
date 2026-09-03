@@ -162,7 +162,7 @@ Respond with ONLY a JSON object matching exactly this shape, no prose, no markdo
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: {
         temperature: 0.5,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 8192,
         responseMimeType: "application/json",
       },
     },
@@ -177,7 +177,12 @@ Respond with ONLY a JSON object matching exactly this shape, no prose, no markdo
   try {
     parsed = JSON.parse(stripFences(text));
   } catch {
-    throw makeError("PARSE_ERROR", null, text, FRIENDLY_BY_CODE.PARSE_ERROR);
+    const repaired = tryRepairJson(stripFences(text));
+    if (repaired) {
+      parsed = repaired;
+    } else {
+      throw makeError("PARSE_ERROR", null, text, FRIENDLY_BY_CODE.PARSE_ERROR);
+    }
   }
 
   const validated = itinerarySchema.safeParse(parsed);
@@ -189,4 +194,33 @@ Respond with ONLY a JSON object matching exactly this shape, no prose, no markdo
 
 function stripFences(text) {
   return text.trim().replace(/^```(json)?/i, "").replace(/```$/, "").trim();
+}
+
+function tryRepairJson(text) {
+  try {
+    const firstBrace = text.indexOf("{");
+    if (firstBrace === -1) return null;
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    let end = -1;
+    for (let i = firstBrace; i < text.length; i++) {
+      const ch = text[i];
+      if (escape) { escape = false; continue; }
+      if (ch === "\\") { escape = true; continue; }
+      if (ch === '"') { inString = !inString; continue; }
+      if (inString) continue;
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) { end = i; break; }
+      }
+    }
+    if (end === -1) return null;
+    let candidate = text.slice(firstBrace, end + 1);
+    candidate = candidate.replace(/,\s*([}\]])/g, "$1");
+    return JSON.parse(candidate);
+  } catch {
+    return null;
+  }
 }

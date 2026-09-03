@@ -12,7 +12,13 @@ export function ItineraryForm({ onSubmit, pending, defaultDestinationId }) {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(itineraryFormSchema),
-    defaultValues: { days: 3, interests: [], pace: "balanced", budget: "moderate" },
+    defaultValues: {
+      destinationId: defaultDestinationId,
+      days: 3,
+      interests: [],
+      pace: "balanced",
+      budget: "moderate",
+    },
   });
 
   return (
@@ -27,7 +33,6 @@ export function ItineraryForm({ onSubmit, pending, defaultDestinationId }) {
         <select
           id="destinationId"
           {...register("destinationId")}
-          defaultValue={defaultDestinationId}
           className="w-full border border-[var(--color-line)] bg-[var(--color-paper)] px-3 py-2"
           required
         >
@@ -37,6 +42,9 @@ export function ItineraryForm({ onSubmit, pending, defaultDestinationId }) {
             </option>
           ))}
         </select>
+        {errors.destinationId && (
+          <p className="mt-1 text-xs text-[var(--color-warn)]">{errors.destinationId.message}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">

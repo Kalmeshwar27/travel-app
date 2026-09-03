@@ -20,6 +20,7 @@ export const itinerarySchema = z.object({
 });
 
 export const itineraryFormSchema = z.object({
+  destinationId: z.string().min(1, "Pick a destination"),
   days: z.coerce.number().int().min(1, "At least 1 day").max(14, "Keep it to 14 days or fewer"),
   interests: z.array(z.string()).default([]),
   pace: z.enum(["relaxed", "balanced", "packed"]).default("balanced"),

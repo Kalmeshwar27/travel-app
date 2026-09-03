@@ -1,16 +1,52 @@
 import { useParams, Link, Navigate } from "react-router-dom";
+import { useQueries } from "@tanstack/react-query";
+import { searchImages } from "../services/imageApi";
 import { findDestinationBySlug } from "../data/destinations";
 import { PageShell } from "../components/layout/PageShell";
 import { RemoteImage } from "../components/common/RemoteImage";
 import { FamousPlaceCard } from "../components/destination/FamousPlaceCard";
 import { WeatherWidget } from "../components/weather/WeatherWidget";
 import { ChatPanel } from "../components/chatbot/ChatPanel";
-import { Button, Badge } from "../components/common/Common";
+import { Button, Badge, SkeletonBlock } from "../components/common/Common";
+import { Lightbox, useLightbox } from "../components/common/Lightbox";
 import { ArrowLeft, CalendarDays } from "lucide-react";
+
+function GalleryItem({ place, onOpen, index, image }) {
+  if (!image) return <SkeletonBlock className="aspect-square" />;
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(index)}
+      aria-label={`Open image of ${place.name}`}
+      className="group relative aspect-square overflow-hidden focus:outline-none focus:ring-2 focus:ring-[var(--color-route)]"
+    >
+      <img
+        src={image.url}
+        alt={place.name}
+        loading="lazy"
+        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+      />
+      <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 text-left text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+        {place.name}
+      </span>
+    </button>
+  );
+}
 
 export function DestinationDetails() {
   const { slug } = useParams();
   const destination = findDestinationBySlug(slug);
+  const lightbox = useLightbox();
+  const galleryQueries = useQueries({
+    queries: (destination?.famousPlaces || []).map((p) => ({
+      queryKey: ["images", p.imageQuery, 1],
+      queryFn: ({ signal }) => searchImages(p.imageQuery, 1, { signal }),
+      enabled: Boolean(p.imageQuery),
+      staleTime: 60 * 60 * 1000,
+      retry: 1,
+    })),
+  });
+  const galleryImages = galleryQueries.map((q) => q.data?.[0]).filter(Boolean);
 
   if (!destination) return <Navigate to="/destinations" replace />;
 
@@ -69,8 +105,14 @@ export function DestinationDetails() {
             <div className="mt-14">
               <h2 className="rule mb-6 pt-6 font-display text-2xl">Gallery</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {destination.famousPlaces.map((place) => (
-                  <RemoteImage key={place.id} query={place.imageQuery} alt={place.name} aspect="aspect-square" />
+                {destination.famousPlaces.map((place, i) => (
+                  <GalleryItem
+                    key={place.id}
+                    place={place}
+                    index={i}
+                    image={galleryImages?.[i]}
+                    onOpen={lightbox.open}
+                  />
                 ))}
               </div>
             </div>
@@ -90,6 +132,25 @@ export function DestinationDetails() {
           </aside>
         </div>
       </PageShell>
+
+      <Lightbox
+        images={galleryImages.map((img, i) => ({
+          ...img,
+          name: destination.famousPlaces[i]?.name,
+        }))}
+        index={lightbox.index}
+        onClose={lightbox.close}
+        onPrev={() =>
+          lightbox.index !== null &&
+          lightbox.open(
+            (lightbox.index - 1 + galleryImages.length) % galleryImages.length
+          )
+        }
+        onNext={() =>
+          lightbox.index !== null &&
+          lightbox.open((lightbox.index + 1) % galleryImages.length)
+        }
+      />
     </>
   );
 }
