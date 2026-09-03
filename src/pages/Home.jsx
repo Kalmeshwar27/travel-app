@@ -41,7 +41,6 @@ export function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-night)] via-[var(--color-night)]/40 to-transparent" />
 
         <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-16">
-          <p className="coord text-black">A field guide to the world</p>
           <h1 className="mt-3 max-w-2xl font-display text-5xl leading-[1.05] sm:text-6xl">
             Know a place before you land in it.
           </h1>

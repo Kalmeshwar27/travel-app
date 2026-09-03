@@ -3,7 +3,7 @@ import { itinerarySchema } from "../schemas/itinerarySchema";
 const DIRECT_URL = (model) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const MODEL = "gemini-3.6-flash";
+const MODEL = import.meta.env.VITE_GEMINI_MODEL || "gemini-3.6-flash";
 
 /**
  * Every call is tried against the Vercel serverless proxy first
@@ -13,6 +13,7 @@ const MODEL = "gemini-3.6-flash";
  * directly with VITE_GEMINI_API_KEY, which is fine for local development.
  */
 async function callGemini(payload, { signal } = {}) {
+  let lastErr;
   try {
     const res = await fetch("/api/gemini", {
       method: "POST",
@@ -20,48 +21,69 @@ async function callGemini(payload, { signal } = {}) {
       body: JSON.stringify(payload),
       signal,
     });
-    if (res.ok) return await res.json();
-    if (res.status !== 404) {
-      throw await responseError(res);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && !data.error) return data;
+      lastErr = new Error(data?.error?.message || `Server proxy error (${res.status}).`);
+      lastErr.status = res.status;
+    } else if (res.status !== 404) {
+      lastErr = await responseError(res);
     }
-    // 404 -> no serverless function present locally, fall through.
   } catch (err) {
     if (err.name === "AbortError") throw err;
-    if (!GEMINI_KEY) throw err;
-    // fall through to direct call below
+    lastErr = err;
   }
 
   if (!GEMINI_KEY) {
+    if (lastErr) throw lastErr;
     const err = new Error("The AI assistant isn't configured. Add a Gemini API key to continue.");
     err.code = "MISSING_KEY";
     throw err;
   }
 
-  const res = await fetch(`${DIRECT_URL(MODEL)}?key=${GEMINI_KEY}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-    signal,
-  });
-  if (!res.ok) throw await responseError(res);
-  return await res.json();
+  try {
+    const res = await fetch(`${DIRECT_URL(MODEL)}?key=${GEMINI_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal,
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const err = new Error(data?.error?.message || `The AI assistant is unavailable right now (${res.status}).`);
+      err.status = res.status;
+      err.raw = JSON.stringify(data);
+      throw err;
+    }
+    if (data?.error) {
+      const err = new Error(data.error.message || "The AI assistant returned an error.");
+      err.raw = JSON.stringify(data);
+      throw err;
+    }
+    return data;
+  } catch (err) {
+    if (err.name === "AbortError") throw err;
+    if (!lastErr) throw err;
+    throw err;
+  }
 }
 
 async function responseError(res) {
   let detail = "";
   try {
-    const body = await res.json();
-    detail = body?.error?.message || "";
+    detail = await res.text();
   } catch {
     /* ignore */
   }
-  const err = new Error(detail || `The AI assistant is unavailable right now (${res.status}).`);
+  const err = new Error(`AI proxy returned ${res.status}: ${detail || res.statusText}`);
   err.status = res.status;
   return err;
 }
 
 function extractText(result) {
-  return result?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ?? "";
+  const parts = result?.candidates?.[0]?.content?.parts;
+  if (!parts) return "";
+  return parts.map((p) => p.text || "").join("");
 }
 
 /**
@@ -139,19 +161,28 @@ Respond with ONLY a JSON object matching exactly this shape, no prose, no markdo
   );
 
   const text = extractText(result);
+  if (!text) {
+    const err = new Error("The assistant returned an empty response. Check the API key / model name.");
+    err.code = "EMPTY_RESPONSE";
+    err.raw = JSON.stringify(result).slice(0, 1000);
+    throw err;
+  }
   let parsed;
   try {
     parsed = JSON.parse(stripFences(text));
   } catch {
     const err = new Error("The itinerary came back in an unexpected format. Please try again.");
     err.code = "PARSE_ERROR";
+    err.raw = text.slice(0, 500);
     throw err;
   }
 
   const validated = itinerarySchema.safeParse(parsed);
   if (!validated.success) {
-    const err = new Error("The itinerary didn't match the expected structure. Please try again.");
+    const issues = validated.error.issues.map((i) => `${i.path.join(".") || "<root>"}: ${i.message}`).join("; ");
+    const err = new Error(`The itinerary didn't match the expected structure (${issues}). Please try again.`);
     err.code = "VALIDATION_ERROR";
+    err.raw = JSON.stringify(parsed).slice(0, 500);
     throw err;
   }
   return validated.data;

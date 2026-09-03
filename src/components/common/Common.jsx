@@ -46,7 +46,7 @@ export function EmptyState({ icon: Icon = Compass, title, message, action }) {
   );
 }
 
-export function ErrorState({ title = "Something went wrong", message, onRetry }) {
+export function ErrorState({ title = "Something went wrong", message, onRetry, children }) {
   return (
     <div
       role="alert"
@@ -61,6 +61,7 @@ export function ErrorState({ title = "Something went wrong", message, onRetry })
           Try again
         </Button>
       )}
+      {children}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { PageShell } from "../components/layout/PageShell";
 import { ItineraryForm } from "../components/itinerary/ItineraryForm";
@@ -15,17 +15,24 @@ export function Itinerary() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(null);
   const [submittedFor, setSubmittedFor] = useState(null);
+  const lastValuesRef = useRef(null);
 
   async function handleSubmit(values) {
     const destination = destinations.find((d) => d.id === values.destinationId) || destinations[0];
+    lastValuesRef.current = { ...values, destination };
+    await run(lastValuesRef.current);
+  }
+
+  async function run(payload) {
     setPending(true);
     setError(null);
     setItinerary(null);
-    setSubmittedFor(destination.name);
+    setSubmittedFor(payload.destination.name);
     try {
-      const result = await generateItinerary({ ...values, destination });
+      const result = await generateItinerary(payload);
       setItinerary(result);
     } catch (err) {
+      console.error("[itinerary] generation failed", err);
       setError(err);
     } finally {
       setPending(false);
@@ -57,8 +64,17 @@ export function Itinerary() {
             <ErrorState
               title="Couldn't generate an itinerary"
               message={error.message}
-              onRetry={undefined}
-            />
+              onRetry={lastValuesRef.current ? () => run(lastValuesRef.current) : undefined}
+            >
+              {error.raw && (
+                <details className="mt-3 w-full max-w-md text-left text-xs text-[var(--color-ink-soft)]">
+                  <summary className="cursor-pointer select-none">Show technical details</summary>
+                  <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words border border-[var(--color-line)] bg-[var(--color-paper-dim)] p-2">
+{error.code ? `code: ${error.code}\n` : ""}{error.status ? `status: ${error.status}\n` : ""}{error.raw}
+                  </pre>
+                </details>
+              )}
+            </ErrorState>
           )}
 
           {!pending && !error && itinerary && <ItineraryTimeline itinerary={itinerary} />}

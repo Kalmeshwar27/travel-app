@@ -47,7 +47,9 @@ export function ChatPanel({ destination }) {
       const answer = await sendTravelQuestion({ destination, history }, question);
       setMessages((prev) => [...prev, { role: "model", text: answer }]);
     } catch (err) {
-      setError(err.message || "The assistant is unavailable right now.");
+      console.error("[chat] send failed", err);
+      const code = err?.code ? ` (${err.code}${err.status ? `, status ${err.status}` : ""})` : "";
+      setError(`${err.message || "The assistant is unavailable right now."}${code}`);
     } finally {
       setPending(false);
     }
