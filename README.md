@@ -82,18 +82,24 @@ npm run build
 npm run preview
 ```
 
-## API keys & security
+## Screenshots
 
-- Never commit `.env` -- it's already in `.gitignore`.
-- `VITE_OPENWEATHER_API_KEY`, `VITE_UNSPLASH_ACCESS_KEY` / `VITE_PEXELS_API_KEY`,
-  and `VITE_GEMINI_API_KEY` are read from `import.meta.env`. Anything
-  VITE_-prefixed is bundled into the client -- acceptable for free-tier
-  weather/image keys, but not ideal for a key that can incur cost.
-- For that reason, `api/gemini.js` is included as a Vercel serverless
-  function that proxies Gemini requests server-side. `src/services/geminiApi.js`
-  calls `/api/gemini` first and only falls back to the direct client-side
-  call (using `VITE_GEMINI_API_KEY`) if that route isn't available -- e.g.
-  when running plain `npm run dev` without `vercel dev`. If you deploy to
-  Vercel, set `GEMINI_API_KEY` (no VITE_ prefix) in the project's
-  Environment Variables and the key never reaches the browser.
+### Home Page
+![Home Page] (./screenshots/homepage-hero.png)
+
+
+### Explore Destinations
+![Explore Page](./screenshots/destinations_card.png)
+
+(./screenshots/destination_section.png)
+
+(./screenshots/detailed_destionation_card.png)
+
+(./screenshots/gallary_view.png)
+
+### Plan a Trip
+![Plan Page] (./screenshots/trip_planning with_assistent.png)
+
+### footer
+(./screenshots/footer.png)
 
