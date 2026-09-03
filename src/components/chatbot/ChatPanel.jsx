@@ -48,8 +48,7 @@ export function ChatPanel({ destination }) {
       setMessages((prev) => [...prev, { role: "model", text: answer }]);
     } catch (err) {
       console.error("[chat] send failed", err);
-      const code = err?.code ? ` (${err.code}${err.status ? `, status ${err.status}` : ""})` : "";
-      setError(`${err.message || "The assistant is unavailable right now."}${code}`);
+      setError(err.message || "The travel assistant is temporarily unavailable. Please try again.");
     } finally {
       setPending(false);
     }
