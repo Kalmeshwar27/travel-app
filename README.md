@@ -104,3 +104,11 @@ npm run preview
 ### Footer
 ![Footer](./screenshots/footer.png)
 
+### Travel Assistant
+![Travel Assistant](./screenshots/travel_assistant.png)
+![Travel assistant working] (./screenshots/travel_assistant_working.png)
+
+### Contact
+![Contact](./screenshots/contact.png)
+
+
