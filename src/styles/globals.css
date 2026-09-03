@@ -1,0 +1,131 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+@import "tailwindcss";
+
+/* ---------------------------------------------------------
+   Design tokens — "field atlas" identity
+   A traveller's notebook, not a travel-agency brochure:
+   inked paper, hairline rules, coordinate marks, a single
+   route-line accent instead of rounded SaaS cards.
+--------------------------------------------------------- */
+@theme {
+  --font-display: "Fraunces", "Iowan Old Style", ui-serif, Georgia, serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-paper: #f6f2e8;
+  --color-paper-dim: #eee7d6;
+  --color-ink: #171b1a;
+  --color-ink-soft: #3a423f;
+  --color-night: #10201d;
+  --color-night-soft: #17302b;
+  --color-route: #b8632f;
+  --color-route-soft: #d8935f;
+  --color-harbor: #2c5f5a;
+  --color-harbor-soft: #5c8c86;
+  --color-line: #d8cfb8;
+  --color-line-dark: #2a3a36;
+  --color-warn: #a13d2b;
+
+  --shadow-card: 0 1px 0 0 rgba(23, 27, 26, 0.06);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-route);
+  color: var(--color-paper);
+}
+
+/* Visible keyboard focus everywhere, no exceptions */
+:focus-visible {
+  outline: 2px solid var(--color-route);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Hairline rule, the recurring structural device instead of borders-on-everything */
+.rule {
+  border-top: 1px solid var(--color-line);
+}
+.rule-dark {
+  border-top: 1px solid var(--color-line-dark);
+}
+
+/* Coordinate / mono label styling used for lat-long, dates, temperatures */
+.coord {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: var(--color-ink-soft);
+}
+
+/* Route line — the single motif reused for itinerary + scroll progress */
+.route-line {
+  position: relative;
+}
+.route-line::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 1px;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--color-route) 0,
+    var(--color-route) 4px,
+    transparent 4px,
+    transparent 9px
+  );
+}
+
+/* Skeleton shimmer, one shared loading language across the app */
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--color-paper-dim) 25%, #e2d9c2 37%, var(--color-paper-dim) 63%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+/* Scrollbar kept quiet on webkit */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 0;
+}
