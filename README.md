@@ -1,11 +1,5 @@
 # Waypoint — Travel Explorer
 
-A front-end travel application built for the Designesthetics Front-End Developer
-assignment: explore destinations, check live weather, and get an AI assistant
-to answer questions and generate a day-by-day itinerary.
-
-**Live demo:** _add your deployed Vercel/Netlify URL here before submitting_
-**Repository:** _add your public GitHub URL here_
 
 ## Features
 
@@ -103,30 +97,3 @@ npm run preview
   Vercel, set `GEMINI_API_KEY` (no VITE_ prefix) in the project's
   Environment Variables and the key never reaches the browser.
 
-## Getting API keys
-
-- OpenWeather: create a free account at openweathermap.org, API keys tab.
-- Unsplash: register an app at unsplash.com/developers for an Access Key.
-- Gemini: create a key at aistudio.google.com/apikey.
-
-## Deploying
-
-1. Push this repo to GitHub (public).
-2. Import it into Vercel (or Netlify).
-3. Add the environment variables above in the project settings.
-4. Deploy, then open the live URL in a private/incognito window to verify
-   nothing depends on local-only state.
-
-## Known trade-offs
-
-- The destination catalog is a small curated set rather than a full live
-  destinations API. A static, well-modeled dataset kept focus on the
-  required UX surfaces (explorer, details, weather, AI, itinerary).
-- The hero video streams from a public Coverr URL rather than being bundled,
-  to keep the repo light -- swap in your own asset in `src/pages/Home.jsx`
-  if you'd rather self-host it.
-
-## Screenshots
-
-_Add 3-4 screenshots here before submitting: home hero, destination explorer,
-destination details with weather + chat, and the generated itinerary._

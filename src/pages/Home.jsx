@@ -7,12 +7,14 @@ import { Button } from "../components/common/Common";
 import { PageShell } from "../components/layout/PageShell";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { useLocationSearch } from "../hooks/useLocationSearch";
+import { useHeroVideo } from "../hooks/useHeroVideo";
 
 export function Home() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const { location, status, requestLocation, setManualLocation } = useGeolocation();
   const { data: suggestions = [] } = useLocationSearch(query);
+  const { data: heroVideo } = useHeroVideo();
 
   function handleExplore(e) {
     e.preventDefault();
@@ -23,22 +25,23 @@ export function Home() {
     <>
       <section className="relative flex min-h-[88vh] items-end overflow-hidden bg-[var(--color-night)] text-[var(--color-paper)]">
         <video
+          key={heroVideo?.url || "fallback"}
           className="absolute inset-0 h-full w-full object-cover opacity-60"
           autoPlay
           loop
           muted
           playsInline
-          poster="https://images.unsplash.com/photo-1500835556837-99ac94a94552?w=1600&q=60"
+          poster={heroVideo?.poster || "https://assets.mixkit.co/videos/27028/27028-thumb-360-0.jpg"}
         >
           <source
-            src="https://cdn.coverr.co/videos/coverr-flying-over-mountains-1584/1080p.mp4"
+            src={heroVideo?.url || "https://assets.mixkit.co/videos/27028/27028-360.mp4"}
             type="video/mp4"
           />
         </video>
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-night)] via-[var(--color-night)]/40 to-transparent" />
 
         <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-16">
-          <p className="coord text-[var(--color-paper)]/70">A field guide to the world</p>
+          <p className="coord text-black">A field guide to the world</p>
           <h1 className="mt-3 max-w-2xl font-display text-5xl leading-[1.05] sm:text-6xl">
             Know a place before you land in it.
           </h1>
