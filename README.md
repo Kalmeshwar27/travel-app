@@ -84,22 +84,23 @@ npm run preview
 
 ## Screenshots
 
-### Home Page
-![Home Page] (./screenshots/homepage-hero.png)
+## Screenshots
 
+### Home Page
+![Home Page](./screenshots/homepage-hero.png)
 
 ### Explore Destinations
-![Explore Page](./screenshots/destinations_card.png)
+![Destinations Grid](./screenshots/destinations_card.png)
 
-(./screenshots/destination_section.png)
+![Destination Section](./screenshots/destination_section.png)
 
-(./screenshots/detailed_destionation_card.png)
+![Detailed Destination Card](./screenshots/detailed_destionation_card.png)
 
-(./screenshots/gallary_view.png)
+![Gallery View](./screenshots/gallary_view.png)
 
 ### Plan a Trip
-![Plan Page] (./screenshots/trip_planning with_assistent.png)
+![Trip Planning with Assistant](./screenshots/trip_planning_with_assistent.png)
 
-### footer
-(./screenshots/footer.png)
+### Footer
+![Footer](./screenshots/footer.png)
 
